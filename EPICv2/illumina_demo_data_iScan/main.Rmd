@@ -1,5 +1,5 @@
 ---
-title: "illumina EPICv2 iScan Demo [Debug]"
+title: "illumina EPICv2 iScan Demo"
 author: Yuan Tian (champ450K@gmail.com)
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: github_document
@@ -7,7 +7,20 @@ output: github_document
 
 This is a run markdown for ChAMP supporting on illumina HumanMethylation EPICv2 array. To replicate this run, you need to install the ChAMPdata (>=2.31.1), and ChAMP version >= 2.29.1. The latest ChAMPdata can be obtained [here](https://github.com/YuanTian1991/ChAMPdata). And the latest ChAMP is [here](https://github.com/YuanTian1991/ChAMP).
 
-In this demo, I am using the defatul [demo data provided by illumina](https://emea.support.illumina.com/array/array_kits/infinium-methylationepic-beadchip-kit/downloads.html).
+To install ChAMP 2.29.1. In shell:
+```bash
+git clone https://github.com/YuanTian1991/ChAMP.git
+R CMD INSTALL ChAMP
+```
+
+Then install ChAMPdata 2.23.1:
+
+```bash
+git clone https://github.com/YuanTian1991/ChAMPdata.git
+R CMD INSTALL ChAMPdata
+```
+
+In this demo, I am using the default iScan one [demo data provided by illumina](https://emea.support.illumina.com/array/array_kits/infinium-methylationepic-beadchip-kit/downloads.html).
 
 ```{r, echo = TRUE, eval = FALSE}
 library("ChAMP")
@@ -20,10 +33,6 @@ After the above library loading, you can check library version with `sessionInfo
 Like previous version, ChAMP requires only one CSV to be put in a folder, along with IDAT files to be loaded.
 
 ```{r, echo = TRUE, eval = FALSE}
-library("illuminaio")
-
-source("~/Personal/ChAMP-Dev/ChAMP/R/champ.import.R")
-
 myImport <- champ.import("./DemoDataEPICv2/", arraytype = "EPICv2") # This can also be set just as `EPIC`
 ```
 
@@ -32,17 +41,12 @@ myImport <- champ.import("./DemoDataEPICv2/", arraytype = "EPICv2") # This can a
 After loading, filtering will be done, specifically, the SNP mask is using the one provided by Zhou [here](http://zwdzwd.github.io/InfiniumAnnotation).
 
 ```{r, echo = TRUE, eval = FALSE}
-library("impute")
-
-source("~/Personal/ChAMP-Dev/ChAMP/R/champ.filter.R")
 myFilter <- champ.filter(beta=myImport$beta, 
                          pd=myImport$pd, 
                          detP=myImport$detP,
                          beadcount=myImport$beadcount, 
                          ProbeCutoff=0.1,
                          arraytype = "EPICv2") # This can also be set just as `EPIC`
-
-
 ```
 
 Below example shows if you need to do population-specific filtering. Currently, EPICv2 annotation only support AFR, AMR, EAS, EUR and SAS.
@@ -61,8 +65,6 @@ myFilter <- champ.filter(beta=myImport$beta,
 Above two step can be merged into just one `champ.load()`. The defaul champ.load have two method: `ChAMP` or `minfi`, currently minfi package is not working for EPICv2, so only `ChAMP` works here.
 
 ```{r, echo = TRUE, eval = FALSE}
-source("~/Personal/ChAMP-Dev/ChAMP/R/champ.load.R")
-
 myLoad <- champ.load("./DemoDataEPICv2/", arraytype = "EPICv2")
 ```
 
@@ -72,38 +74,23 @@ myLoad <- champ.load("./DemoDataEPICv2/", arraytype = "EPICv2")
 Then, we can use CpG.GUI() to explore a beta matrix, along with a vector of phenotype.
 
 ```{r, echo = TRUE, eval = FALSE}
-library("shiny")
-library("shinythemes")
-library("plotly")
-
-source("~/Personal/ChAMP-Dev/ChAMP/R/CpG.GUI.R")
-
 CpG.GUI(rownames(myLoad$beta), arraytype = "EPICv2")
 ```
+![CpG](./figures/figure1.png)
 
 ## 5. QC
 
 QC.GUI() can be used for check beta matrix
 
 ```{r, echo = TRUE, eval = FALSE}
-library("shiny")
-library("shinythemes")
-library("plotly")
-library("RColorBrewer")
-library("dendextend")
-library(isva)
-
-source("~/Personal/ChAMP-Dev/ChAMP/R/EstDimRMTv2.R")
-source("~/Personal/ChAMP-Dev/ChAMP/R/QC.GUI.R")
-
 QC.GUI(beta=myLoad$beta, pheno = myLoad$pd$Sample_Group, arraytype = "EPICv2")
 ```
+
+![QC](./figures/figure2.png)
 
 Also, champ.QC() function works, but I mostly only use QC.GUI() above.
 
 ```{r, echo = TRUE, eval = FALSE}
-source("~/Personal/ChAMP-Dev/ChAMP/R/champ.QC.R")
-
 champ.QC(beta = myLoad$beta, pheno = myLoad$pd$Sample_Group)
 ```
 
@@ -112,17 +99,10 @@ champ.QC(beta = myLoad$beta, pheno = myLoad$pd$Sample_Group)
 Since minfi is not working now, currently, champ.norm() only support `BMIQ` and `PBC` method. `SWAN` and `FunctionalNormalisation` is not working for now.
 
 ```{r, echo = TRUE, eval = FALSE}
-library("doParallel")
-
-source("~/Personal/ChAMP-Dev/ChAMP/R/champ.norm.R")
-source("~/Personal/ChAMP-Dev/ChAMP/R/champ.BMIQ.R")
-
-
 # I recommand BMIQ, which ONLY works for beta matrix.
 myNorm <- champ.norm(myLoad$beta, method = "BMIQ", arraytype = "EPICv2")
 
 # or PBC
-source("~/Personal/ChAMP-Dev/ChAMP/R/DoPBC.R")
 myNorm <- champ.norm(myLoad$beta, method = "PBC", arraytype = "EPICv2")
 ```
 
@@ -132,16 +112,17 @@ Below is the normalised data from QC.GUI()
 QC.GUI(beta=myNorm, pheno = myLoad$pd$Sample_Group, arraytype = "EPICv2")
 ```
 
+![NormalisedQC](./figures/figure3.png)
 
 ## 6. SVD Check
 
 Than champ.SVD() should be used to check confounding effect.
 
 ```{r, echo = TRUE, eval = FALSE}
-source("~/Personal/ChAMP-Dev/ChAMP/R/champ.SVD.R")
-
 champ.SVD(myNorm, pd = myLoad$pd)
 ```
+
+![SVD](./figures/figure4.png)
 
 The result shows there are confounding effect for Array, so I want to adjust it with Combat.
 
@@ -150,10 +131,6 @@ The result shows there are confounding effect for Array, so I want to adjust it 
 Below code works for batch correction, but I do admit that current champ.runCombat() need to improve and failed constantly. A better method (maybe scBatch?) need to be incoprated.
 
 ```{r, echo = TRUE, eval = FALSE}
-library("sva")
-
-source("~/Personal/ChAMP-Dev/ChAMP/R/champ.runCombat.R")
-
 myCombat <- champ.runCombat(beta=myNorm,pd=myLoad$pd,batchname=c("Array"))
 ```
 
@@ -162,8 +139,6 @@ myCombat <- champ.runCombat(beta=myNorm,pd=myLoad$pd,batchname=c("Array"))
 Finally, below is the EWAS analysis, firstly do DMP analysis.
 
 ```{r, echo = TRUE, eval = FALSE}
-library("limma")
-source("~/Personal/ChAMP-Dev/ChAMP/R/champ.DMP.R")
 
 # Below code exist because the origin sample group contains space, replace it with `_` works.
 tmp_pheno <- myLoad$pd$Sample_Group
@@ -175,16 +150,12 @@ myDMP <- champ.DMP(beta = myNorm,pheno=tmp_pheno, arraytype = "EPICv2")
 Then, CpG.GUI() can be used to check the DMP result:
 
 ```{r, echo = TRUE, eval = FALSE}
-library("shiny")
-library("shinythemes")
-library("plotly")
-
-source("~/Personal/ChAMP-Dev/ChAMP/R/DMP.GUI.R")
-
 DMP.GUI(DMP=myDMP[[1]], beta=myNorm, pheno=myLoad$pd$Sample_Group)
 ```
 
 It works nicely.
+
+![DMP.GUI](./figures/figure5.png)
 
 ## 7. DMR and GUI
 
@@ -193,12 +164,6 @@ This is a challenge part. Firstly I believe `ProbeLasso` and `DMRcate` is not wo
 So, the `Bumphunter` is the only choice here for DMR. Actually this is the one I recommand.
 
 ```{r, echo = TRUE, eval = FALSE}
-library("bumphunter")
-
-source("~/Personal/ChAMP-Dev/ChAMP/R/champ.DMR.R")
-tmp_pheno <- myLoad$pd$Sample_Group
-tmp_pheno <- gsub(" ", "_", tmp_pheno)
-
 myDMR <- champ.DMR(beta=myNorm, 
                    pheno=tmp_pheno,
                    method="Bumphunter", # Don't use othe method, only Bumphunter works.
@@ -209,14 +174,10 @@ myDMR <- champ.DMR(beta=myNorm,
 Below is the DMP.GUI
 
 ```{r, echo = TRUE, eval = FALSE}
-library("shiny")
-library("shinythemes")
-library("plotly")
-
-source("~/Personal/ChAMP-Dev/ChAMP/R/DMR.GUI.R")
-
 DMR.GUI(DMR=myDMR, beta=myNorm, pheno=tmp_pheno, arraytype = "EPICv2")
 ```
+
+![DMR.GUI](./figures/figure6.png)
 
 It works well, just a bit slow, I should accelerate it a bit with data.table....
 
@@ -225,10 +186,6 @@ It works well, just a bit slow, I should accelerate it a bit with data.table....
 Similar as DMR, Block should works:
 
 ```{r, echo = TRUE, eval = FALSE}
-source("~/Personal/ChAMP-Dev/ChAMP/R/champ.Block.R")
-tmp_pheno <- myLoad$pd$Sample_Group
-tmp_pheno <- gsub(" ", "_", tmp_pheno)
-
 myBlock <- champ.Block(beta=myNorm, pheno = tmp_pheno, arraytype = "EPICv2")
 ```
 
@@ -240,12 +197,6 @@ The GSEA will take DMP and DMR result with various GO enrichment method. Neither
 
 
 ```{r, echo = TRUE, eval = FALSE}
-library("missMethyl")
-library("globaltest")
-
-source("~/Personal/ChAMP-Dev/ChAMP/R/champ.GSEA.R")
-source("~/Personal/ChAMP-Dev/ChAMP/R/champ.ebGSEA.R")
-
 myGSEA <- champ.GSEA(beta=myNorm,
                      DMP=myDMP[[1]], 
                      DMR=myDMR,
@@ -265,9 +216,6 @@ gometh is not supporting because it's a method from missMethyl package, which is
 Refbase function works for EPICv2.
 
 ```{r, echo = TRUE, eval = FALSE}
-library("quadprog")
-source("~/Personal/ChAMP-Dev/ChAMP/R/champ.refbase.R")
-
 myRefBase <- champ.refbase(beta=as.data.frame(myNorm) ,arraytype="EPICv2")
 ```
 

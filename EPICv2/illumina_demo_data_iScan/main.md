@@ -246,14 +246,4 @@ tmp_pheno <- gsub(" ", "_", tmp_pheno)
 myBlock <- champ.Block(beta=myNorm, pheno = tmp_pheno, arraytype = "EPICv2")
 ```
 
-Below is the GUI for Block.
-
-``` r
-library("shiny")
-library("shinythemes")
-library("plotly")
-
-source("~/Personal/ChAMP-Dev/ChAMP/R/Block.GUI.R")
-
-Block.GUI(Block = myBlock, beta=myNorm, pheno=tmp_pheno, arraytype = "EPICv2")
-```
+Block.GUI is not working for now.

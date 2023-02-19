@@ -188,9 +188,9 @@ It works nicely.
 
 ## 7. DMR and GUI
 
-This is a challenge part. Firstly I believe ProbeLasso and DMRcate is not working, the formal requires a special king of old annotation, which I have not generated (but I don't want to use the old format anymore, so I will change the code to fit new annotation). DMRcate package can't be install on my computer...Like some user complained, I don't know why yet.
+This is a challenge part. Firstly I believe `ProbeLasso` and `DMRcate` is not working, the formal requires a special king of old annotation, which I have not generated (but I don't want to use the old format anymore, so I will change the code to fit new annotation). DMRcate package can't be install on my computer...Like some user complained, I don't know why yet.
 
-So, the Bumphunter is the only choice here. Actually this is the one I recommand.
+So, the `Bumphunter` is the only choice here for DMR. Actually this is the one I recommand.
 
 ```{r, echo = TRUE, eval = FALSE}
 library("bumphunter")
@@ -199,7 +199,11 @@ source("~/Personal/ChAMP-Dev/ChAMP/R/champ.DMR.R")
 tmp_pheno <- myLoad$pd$Sample_Group
 tmp_pheno <- gsub(" ", "_", tmp_pheno)
 
-myDMR <- champ.DMR(beta=myNorm, pheno=tmp_pheno, method="Bumphunter", arraytype = "EPICv2")
+myDMR <- champ.DMR(beta=myNorm, 
+                   pheno=tmp_pheno,
+                   method="Bumphunter", # Don't use othe method, only Bumphunter works.
+                   arraytype = "EPICv2", 
+                   cores=10)
 ```
 
 Below is the DMP.GUI
@@ -221,7 +225,6 @@ It works well, just a bit slow, I should accelerate it a bit with data.table....
 Similar as DMR, Block should works:
 
 ```{r, echo = TRUE, eval = FALSE}
-
 source("~/Personal/ChAMP-Dev/ChAMP/R/champ.Block.R")
 tmp_pheno <- myLoad$pd$Sample_Group
 tmp_pheno <- gsub(" ", "_", tmp_pheno)
@@ -230,4 +233,46 @@ myBlock <- champ.Block(beta=myNorm, pheno = tmp_pheno, arraytype = "EPICv2")
 ```
 
 Block.GUI is not working for now.
+
+## 8. GSEA
+
+The GSEA will take DMP and DMR result with various GO enrichment method. Neither `gometh` nor `ebayes` method currently is not working, only `fisher` works.
+
+
+```{r, echo = TRUE, eval = FALSE}
+library("missMethyl")
+library("globaltest")
+
+source("~/Personal/ChAMP-Dev/ChAMP/R/champ.GSEA.R")
+source("~/Personal/ChAMP-Dev/ChAMP/R/champ.ebGSEA.R")
+
+myGSEA <- champ.GSEA(beta=myNorm,
+                     DMP=myDMP[[1]], 
+                     DMR=myDMR,
+                     pheno=tmp_pheno,
+                     arraytype="EPICv2",
+                     adjPval=0.05, 
+                     method="fisher")
+
+
+```
+
+
+gometh is not supporting because it's a method from missMethyl package, which is also outdated seems. ebGSEA does not support because globaltest failed, I don't know why yet...
+
+# 9. Refbase Cell Type Adjustment
+
+Refbase function works for EPICv2.
+
+```{r, echo = TRUE, eval = FALSE}
+library("quadprog")
+source("~/Personal/ChAMP-Dev/ChAMP/R/champ.refbase.R")
+
+myRefBase <- champ.refbase(beta=as.data.frame(myNorm) ,arraytype="EPICv2")
+```
+
+
+# 10. CNA
+
+This function need to improve a bit, which is not working now.
 

@@ -1,5 +1,5 @@
 ---
-title: "ChAMP run on illumina EPICv2 iScan Demo Data"
+title: "illumina EPICv2 iScan Demo [Debug]"
 author: Yuan Tian (champ450K@gmail.com)
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output: github_document
@@ -211,10 +211,32 @@ library("plotly")
 
 source("~/Personal/ChAMP-Dev/ChAMP/R/DMR.GUI.R")
 
-tmp_pheno <- myLoad$pd$Sample_Group
-tmp_pheno <- gsub(" ", "_", tmp_pheno)
-
 DMR.GUI(DMR=myDMR, beta=myNorm, pheno=tmp_pheno, arraytype = "EPICv2")
 ```
 
 It works well, just a bit slow, I should accelerate it a bit with data.table....
+
+## 7. Block and GUI
+
+Similar as DMR, Block should works:
+
+```{r, echo = TRUE, eval = FALSE}
+
+source("~/Personal/ChAMP-Dev/ChAMP/R/champ.Block.R")
+tmp_pheno <- myLoad$pd$Sample_Group
+tmp_pheno <- gsub(" ", "_", tmp_pheno)
+
+myBlock <- champ.Block(beta=myNorm, pheno = tmp_pheno, arraytype = "EPICv2")
+```
+
+Below is the GUI for Block.
+```{r, echo = TRUE, eval = FALSE}
+library("shiny")
+library("shinythemes")
+library("plotly")
+
+source("~/Personal/ChAMP-Dev/ChAMP/R/Block.GUI.R")
+
+Block.GUI(Block = myBlock, beta=myNorm, pheno=tmp_pheno, arraytype = "EPICv2")
+```
+

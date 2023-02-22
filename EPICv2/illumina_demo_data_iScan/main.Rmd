@@ -76,7 +76,7 @@ Then, we can use CpG.GUI() to explore a beta matrix, along with a vector of phen
 ```{r, echo = TRUE, eval = FALSE}
 CpG.GUI(rownames(myLoad$beta), arraytype = "EPICv2")
 ```
-![CpG](./figures/figure1.png)
+![](./figures/figure1.png)
 
 ## 5. QC
 
@@ -86,7 +86,7 @@ QC.GUI() can be used for check beta matrix
 QC.GUI(beta=myLoad$beta, pheno = myLoad$pd$Sample_Group, arraytype = "EPICv2")
 ```
 
-![QC](./figures/figure2.png)
+![](./figures/figure2.png)
 
 Also, champ.QC() function works, but I mostly only use QC.GUI() above.
 
@@ -94,7 +94,7 @@ Also, champ.QC() function works, but I mostly only use QC.GUI() above.
 champ.QC(beta = myLoad$beta, pheno = myLoad$pd$Sample_Group)
 ```
 
-## 5. Normalisation
+## 6. Normalisation
 
 Since minfi is not working now, currently, champ.norm() only support `BMIQ` and `PBC` method. `SWAN` and `FunctionalNormalisation` is not working for now.
 
@@ -112,9 +112,9 @@ Below is the normalised data from QC.GUI()
 QC.GUI(beta=myNorm, pheno = myLoad$pd$Sample_Group, arraytype = "EPICv2")
 ```
 
-![NormalisedQC](./figures/figure3.png)
+![](./figures/figure3.png)
 
-## 6. SVD Check
+## 7. SVD Check
 
 Than champ.SVD() should be used to check confounding effect.
 
@@ -122,11 +122,11 @@ Than champ.SVD() should be used to check confounding effect.
 champ.SVD(myNorm, pd = myLoad$pd)
 ```
 
-![SVD](./figures/figure4.png)
+![](./figures/figure4.png)
 
 The result shows there are confounding effect for Array, so I want to adjust it with Combat.
 
-## 7. Combat Batch Effect Adjustment
+## 8. Combat Batch Effect Adjustment
 
 Below code works for batch correction, but I do admit that current champ.runCombat() need to improve and failed constantly. A better method (maybe scBatch?) need to be incoprated.
 
@@ -134,7 +134,7 @@ Below code works for batch correction, but I do admit that current champ.runComb
 myCombat <- champ.runCombat(beta=myNorm,pd=myLoad$pd,batchname=c("Array"))
 ```
 
-## 7. DMP and GUI
+## 9. DMP and GUI
 
 Finally, below is the EWAS analysis, firstly do DMP analysis.
 
@@ -155,9 +155,9 @@ DMP.GUI(DMP=myDMP[[1]], beta=myNorm, pheno=myLoad$pd$Sample_Group)
 
 It works nicely.
 
-![DMP.GUI](./figures/figure5.png)
+![](./figures/figure5.png)
 
-## 7. DMR and GUI
+## 10. DMR and GUI
 
 This is a challenge part. Firstly I believe `ProbeLasso` and `DMRcate` is not working, the formal requires a special king of old annotation, which I have not generated (but I don't want to use the old format anymore, so I will change the code to fit new annotation). DMRcate package can't be install on my computer...Like some user complained, I don't know why yet.
 
@@ -177,11 +177,11 @@ Below is the DMP.GUI
 DMR.GUI(DMR=myDMR, beta=myNorm, pheno=tmp_pheno, arraytype = "EPICv2")
 ```
 
-![DMR.GUI](./figures/figure6.png)
+![](./figures/figure6.png)
 
 It works well, just a bit slow, I should accelerate it a bit with data.table....
 
-## 7. Block and GUI
+## 11. Block and GUI
 
 Similar as DMR, Block should works:
 
@@ -191,7 +191,7 @@ myBlock <- champ.Block(beta=myNorm, pheno = tmp_pheno, arraytype = "EPICv2")
 
 Block.GUI is not working for now.
 
-## 8. GSEA
+## 12. GSEA
 
 The GSEA will take DMP and DMR result with various GO enrichment method. Neither `gometh` nor `ebayes` method currently is not working, only `fisher` works.
 
@@ -211,7 +211,7 @@ myGSEA <- champ.GSEA(beta=myNorm,
 
 gometh is not supporting because it's a method from missMethyl package, which is also outdated seems. ebGSEA does not support because globaltest failed, I don't know why yet...
 
-# 9. Refbase Cell Type Adjustment
+# 13. Refbase Cell Type Adjustment
 
 Refbase function works for EPICv2.
 
@@ -220,7 +220,7 @@ myRefBase <- champ.refbase(beta=as.data.frame(myNorm) ,arraytype="EPICv2")
 ```
 
 
-# 10. CNA
+# 14. CNA
 
 This function need to improve a bit, which is not working now.
 
